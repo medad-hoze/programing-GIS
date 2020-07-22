@@ -1,0 +1,81 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+    <script src="https://code.jquery.com/jquery-1.12.1.min.js"></script>
+    <script src="https://www.govmap.gov.il/govmap/api/govmap.api.js"></script>
+    <script src="https://unpkg.com/terraformer@1.0.8"></script>
+    <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
+    <script type="text/javascript">
+
+
+        var json_str = "https://medad-hoze.github.io/programing-GIS/LandCover.json";
+        var setl_area_features = [];
+        var d;
+
+
+        var s_wkts = [];
+        var s_names = [];
+        var s_symbols = [];
+        var s_bubbleHTMLParameters = [];
+
+        $(document).ready(function ()
+        {
+            govmap.createMap('map', 
+            {
+                token: '5a4b8472-b95b-4687-8179-0ccb621c7990',
+                layers: ["GASSTATIONS","PARCEL_HOKS", "KSHTANN_ASSETS", "bus_stops", "PARCEL_ALL"],
+                showXY: true,
+                identifyOnClick: true,
+                isEmbeddedToggle: false,
+                background: "0",
+                layersMode: 1,
+                zoomButtons:false
+            });
+
+
+            d = $.getJSON(json_str);
+            d.complete(function(response) {
+                console.log(response);
+                for (i = 0; i < d.responseJSON.features.length; i++)
+                {
+                    console.log(response)
+                    console.log(d.responseJSON.features[i].properties.OBJECTID);
+                    polygon = d.responseJSON.features[i].geometry
+				    s_wkts.push(Terraformer.WKT.convert(polygon));
+                    s_names.push(d.responseJSON.features[i].properties.OBJECTID);
+                    s_bubbleHTMLParameters.push(["פוליגון " + i, d.responseJSON.features[i].properties.OBJECTID]);
+
+                }
+            });
+
+
+            var bubbleContent = "<div style='border: 1px solid #525252; margin: 10px;padding: 10px;'><div style='background-color: yellow;'>{0}</div><div               style='background-color: blue;'>{1}</div></div>";
+            var data = {  
+                wkts: s_wkts,  
+                names: s_names,  
+                geometryType: govmap.drawType.Polygon,  
+                defaultSymbol:  
+                    {  
+                    outlineColor: [0, 80, 255, 1],  
+                    outlineWidth: 1,  
+                    fillColor: [138, 43, 226, 0.5]
+                    },  
+                symbols: [],  
+                clearExisting: true,  
+                data: {  
+                        tooltips: s_names,  
+                        headers: s_names,
+                        bubbleHTML: bubbleContent,
+                        bubbleHTMLParameters: s_bubbleHTMLParameters
+                }  
+                };  
+            govmap.displayGeometries(data).then(function (response)  
+            {  
+              console.log(response.data);
+            }); 
+        });
+   </script>
+ </head>
+ <body>
+    <div id="map" style="width:600px;height:600px"></div>
+     </head>
+ <body>
